@@ -1,4 +1,4 @@
-import { Home, Users, Map, AlertTriangle } from 'lucide-react';
+import { Home, Users, Map, AlertTriangle, Settings } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -7,6 +7,7 @@ const tabs = [
   { path: '/contacts', icon: Users, label: '連絡先' },
   { path: '/map', icon: Map, label: 'マップ' },
   { path: '/alerts', icon: AlertTriangle, label: '災害情報' },
+  { path: '/settings', icon: Settings, label: '設定' },
 ];
 
 const BottomNav = () => {
@@ -25,7 +26,7 @@ const BottomNav = () => {
             <button
               key={path}
               onClick={() => navigate(path)}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-colors ${
+              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 transition-colors ${
                 isActive
                   ? isDisasterMode
                     ? 'text-danger'

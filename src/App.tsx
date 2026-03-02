@@ -4,10 +4,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { useDisasterDetection } from "@/hooks/useDisasterDetection";
 import Index from "./pages/Index";
 import Contacts from "./pages/Contacts";
 import ShelterMap from "./pages/ShelterMap";
 import Alerts from "./pages/Alerts";
+import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
@@ -34,8 +37,10 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const AppRoutes = () => {
+const AppContent = () => {
   const { user } = useAuth();
+  useGeolocation();
+  useDisasterDetection();
 
   return (
     <>
@@ -45,6 +50,7 @@ const AppRoutes = () => {
         <Route path="/contacts" element={<ProtectedRoute><Contacts /></ProtectedRoute>} />
         <Route path="/map" element={<ProtectedRoute><ShelterMap /></ProtectedRoute>} />
         <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <BottomNav />}
@@ -59,7 +65,7 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
-          <AppRoutes />
+          <AppContent />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
