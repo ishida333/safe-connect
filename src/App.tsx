@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useDisasterDetection } from "@/hooks/useDisasterDetection";
+import { useStatusSync } from "@/hooks/useStatusSync";
 import Index from "./pages/Index";
 import Contacts from "./pages/Contacts";
 import ShelterMap from "./pages/ShelterMap";
@@ -41,6 +42,7 @@ const AppContent = () => {
   const { user } = useAuth();
   useGeolocation();
   useDisasterDetection();
+  useStatusSync();
 
   return (
     <>

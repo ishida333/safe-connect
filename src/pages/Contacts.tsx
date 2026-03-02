@@ -3,6 +3,7 @@ import { UserPlus, Trash2, Users, ArrowLeft, Search, CheckCircle2 } from 'lucide
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { useContacts, useAddContactByFriendCode, useDeleteContact, useSearchByFriendCode } from '@/hooks/useContacts';
+import { useContactStatuses } from '@/hooks/useContactStatuses';
 import ContactCard from '@/components/ContactCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ const Contacts = () => {
   const navigate = useNavigate();
   const isDisasterMode = useAppStore((s) => s.isDisasterMode);
   const { data: contacts = [], isLoading } = useContacts();
+  const statuses = useContactStatuses(contacts);
   const addContact = useAddContactByFriendCode();
   const deleteContact = useDeleteContact();
   const searchByCode = useSearchByFriendCode();
@@ -171,7 +173,7 @@ const Contacts = () => {
           <div className="space-y-2">
             {contacts.map((contact) => (
               <div key={contact.id} className="group relative">
-                <ContactCard contact={contact} />
+                <ContactCard contact={contact} liveStatus={contact.contact_user_id ? statuses[contact.contact_user_id] : undefined} />
                 <button
                   onClick={() => handleDelete(contact.id)}
                   className="absolute right-2 top-2 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 text-destructive hover:bg-destructive/20"
