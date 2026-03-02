@@ -20,7 +20,7 @@ const Index = () => {
         <div className="mx-auto flex max-w-lg items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            <h1 className="text-base font-bold tracking-tight">みまもり</h1>
+            <h1 className="text-base font-bold tracking-tight">セーフリンク</h1>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs font-medium opacity-80">
