@@ -1,4 +1,5 @@
-import { useAppStore, Contact } from '@/store/useAppStore';
+import { useAppStore } from '@/store/useAppStore';
+import type { Contact } from '@/hooks/useContacts';
 import { MapPin, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 
 const ContactCard = ({ contact }: { contact: Contact }) => {
@@ -6,15 +7,15 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
 
   return (
     <div className={`flex items-center gap-3 rounded-xl border p-3 transition-all duration-300 ${
-      contact.isInDisasterZone && isDisasterMode
-        ? contact.isEvacuated
+      contact.is_in_disaster_zone && isDisasterMode
+        ? contact.is_evacuated
           ? 'border-safe/30 bg-safe/5'
           : 'border-danger/30 bg-danger/5'
         : 'border-border bg-card'
     }`}>
       <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${
-        contact.isInDisasterZone && isDisasterMode
-          ? contact.isEvacuated
+        contact.is_in_disaster_zone && isDisasterMode
+          ? contact.is_evacuated
             ? 'bg-safe text-safe-foreground'
             : 'bg-danger text-danger-foreground'
           : 'bg-secondary text-secondary-foreground'
@@ -30,9 +31,9 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
           </span>
         </div>
 
-        {isDisasterMode && contact.isInDisasterZone ? (
+        {isDisasterMode && contact.is_in_disaster_zone ? (
           <div className="flex items-center gap-1 mt-0.5">
-            {contact.isEvacuated ? (
+            {contact.is_evacuated ? (
               <>
                 <CheckCircle2 className="h-3 w-3 text-safe" />
                 <span className="text-xs text-safe font-medium">避難完了</span>
@@ -43,7 +44,7 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
                 <span className="text-xs text-danger font-medium">被災エリア内</span>
               </>
             )}
-            {contact.lastLocation && (
+            {contact.last_lat && (
               <span className="text-[10px] text-muted-foreground ml-1 flex items-center gap-0.5">
                 <MapPin className="h-2.5 w-2.5" />
                 位置情報共有中

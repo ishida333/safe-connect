@@ -2,37 +2,48 @@ import { useState } from 'react';
 import { UserPlus, Trash2, Users, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
+import { useContacts, useAddContact, useDeleteContact } from '@/hooks/useContacts';
 import ContactCard from '@/components/ContactCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 const Contacts = () => {
   const navigate = useNavigate();
-  const { contacts, addContact, removeContact, isDisasterMode } = useAppStore();
+  const isDisasterMode = useAppStore((s) => s.isDisasterMode);
+  const { data: contacts = [], isLoading } = useContacts();
+  const addContact = useAddContact();
+  const deleteContact = useDeleteContact();
   const [name, setName] = useState('');
   const [relationship, setRelationship] = useState('');
   const [open, setOpen] = useState(false);
 
   const handleAdd = () => {
     if (!name || !relationship) return;
-    addContact({ name, relationship });
-    setName('');
-    setRelationship('');
-    setOpen(false);
+    addContact.mutate(
+      { name, relationship },
+      {
+        onSuccess: () => {
+          setName('');
+          setRelationship('');
+          setOpen(false);
+          toast.success('連絡先を追加しました');
+        },
+        onError: () => toast.error('追加に失敗しました'),
+      }
+    );
+  };
+
+  const handleDelete = (id: string) => {
+    deleteContact.mutate(id, {
+      onSuccess: () => toast.success('連絡先を削除しました'),
+    });
   };
 
   return (
@@ -50,9 +61,7 @@ const Contacts = () => {
 
       <div className="mx-auto max-w-lg px-4 pt-4">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-muted-foreground">
-            {contacts.length}人の登録者
-          </p>
+          <p className="text-sm text-muted-foreground">{contacts.length}人の登録者</p>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1.5 rounded-full">
@@ -67,12 +76,7 @@ const Contacts = () => {
               <div className="space-y-4 pt-2">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground mb-1 block">名前</label>
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="例: お兄ちゃん"
-                    className="rounded-xl"
-                  />
+                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="例: お兄ちゃん" className="rounded-xl" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground mb-1 block">関係</label>
@@ -88,7 +92,7 @@ const Contacts = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleAdd} className="w-full rounded-xl" disabled={!name || !relationship}>
+                <Button onClick={handleAdd} className="w-full rounded-xl" disabled={!name || !relationship || addContact.isPending}>
                   追加する
                 </Button>
               </div>
@@ -96,21 +100,27 @@ const Contacts = () => {
           </Dialog>
         </div>
 
-        <div className="space-y-2">
-          {contacts.map((contact) => (
-            <div key={contact.id} className="group relative">
-              <ContactCard contact={contact} />
-              <button
-                onClick={() => removeContact(contact.id)}
-                className="absolute right-2 top-2 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 text-destructive hover:bg-destructive/20"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {contacts.map((contact) => (
+              <div key={contact.id} className="group relative">
+                <ContactCard contact={contact} />
+                <button
+                  onClick={() => handleDelete(contact.id)}
+                  className="absolute right-2 top-2 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 text-destructive hover:bg-destructive/20"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {contacts.length === 0 && (
+        {!isLoading && contacts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Users className="h-12 w-12 text-muted-foreground/30 mb-3" />
             <p className="text-sm font-medium text-muted-foreground">まだ登録者がいません</p>
