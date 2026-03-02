@@ -17,6 +17,7 @@ interface AppState {
   isEvacuated: boolean;
   currentLocation: { lat: number; lng: number } | null;
   locationLoading: boolean;
+  locationError: string | null;
   settings: Settings;
 
   toggleDisasterMode: () => void;
@@ -24,6 +25,7 @@ interface AppState {
   setEvacuated: (value: boolean) => void;
   setCurrentLocation: (loc: { lat: number; lng: number } | null) => void;
   setLocationLoading: (v: boolean) => void;
+  setLocationError: (message: string | null) => void;
   updateSettings: (partial: Partial<Settings>) => void;
 }
 
@@ -44,6 +46,7 @@ export const useAppStore = create<AppState>()(
       isEvacuated: false,
       currentLocation: null,
       locationLoading: false,
+      locationError: null,
       settings: {
         disasterThreshold: 45,
         notificationsEnabled: true,
@@ -61,6 +64,7 @@ export const useAppStore = create<AppState>()(
       setEvacuated: (value) => set({ isEvacuated: value }),
       setCurrentLocation: (loc) => set({ currentLocation: loc }),
       setLocationLoading: (v) => set({ locationLoading: v }),
+      setLocationError: (message) => set({ locationError: message }),
       updateSettings: (partial) =>
         set((state) => ({ settings: { ...state.settings, ...partial } })),
     }),

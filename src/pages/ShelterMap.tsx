@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
-import { Navigation, MapPin, Crosshair, Loader2 } from 'lucide-react';
+import { Navigation, MapPin, Crosshair, Loader2, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { useGeolocation } from '@/hooks/useGeolocation';
@@ -79,7 +79,7 @@ const RecenterButton = ({ lat, lng }: { lat: number; lng: number }) => {
 const ShelterMap = () => {
   const navigate = useNavigate();
   const isDisasterMode = useAppStore((s) => s.isDisasterMode);
-  const { currentLocation, locationLoading } = useGeolocation();
+  const { currentLocation, locationLoading, locationError, requestLocation } = useGeolocation({ autoRequest: false });
   const { data: disasterData } = useDisasterInfo();
 
   const shelters = useMemo(() => {
@@ -99,7 +99,7 @@ const ShelterMap = () => {
       .slice(0, 5);
   }, [disasterData]);
 
-  if (locationLoading || !currentLocation) {
+  if (locationLoading) {
     return (
       <div className="min-h-screen pb-24">
         <header className={`sticky top-0 z-40 px-4 py-3 transition-colors duration-500 ${
@@ -113,9 +113,40 @@ const ShelterMap = () => {
           </div>
         </header>
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+          <Loader2 className="mb-3 h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">現在地を取得中...</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">位置情報の許可をお願いします</p>
+          <p className="mt-1 text-xs text-muted-foreground/60">位置情報の許可をお願いします</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentLocation) {
+    return (
+      <div className="min-h-screen pb-24">
+        <header className={`sticky top-0 z-40 px-4 py-3 transition-colors duration-500 ${
+          isDisasterMode ? 'bg-danger text-danger-foreground' : 'bg-primary text-primary-foreground'
+        }`}>
+          <div className="mx-auto flex max-w-lg items-center gap-3">
+            <button onClick={() => navigate('/')}>
+              <Navigation className="h-5 w-5" />
+            </button>
+            <h1 className="text-base font-bold">避難所マップ</h1>
+          </div>
+        </header>
+
+        <div className="mx-auto mt-8 max-w-lg px-4">
+          <div className="rounded-2xl border border-border bg-card p-5 text-center">
+            <AlertTriangle className="mx-auto mb-3 h-6 w-6 text-primary" />
+            <p className="text-sm font-semibold">現在地を取得できませんでした</p>
+            <p className="mt-2 text-xs text-muted-foreground">{locationError ?? '位置情報が無効の可能性があります。設定を確認して再試行してください。'}</p>
+            <button
+              onClick={requestLocation}
+              className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+            >
+              再試行
+            </button>
+          </div>
         </div>
       </div>
     );
