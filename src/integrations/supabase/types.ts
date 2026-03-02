@@ -62,6 +62,11 @@ export type Database = {
           display_name: string
           friend_code: string
           id: string
+          is_evacuated: boolean
+          is_in_disaster_zone: boolean
+          last_lat: number | null
+          last_lng: number | null
+          status_updated_at: string | null
           updated_at: string
           user_id: string
         }
@@ -70,6 +75,11 @@ export type Database = {
           display_name?: string
           friend_code?: string
           id?: string
+          is_evacuated?: boolean
+          is_in_disaster_zone?: boolean
+          last_lat?: number | null
+          last_lng?: number | null
+          status_updated_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -78,6 +88,11 @@ export type Database = {
           display_name?: string
           friend_code?: string
           id?: string
+          is_evacuated?: boolean
+          is_in_disaster_zone?: boolean
+          last_lat?: number | null
+          last_lng?: number | null
+          status_updated_at?: string | null
           updated_at?: string
           user_id?: string
         }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useContacts } from '@/hooks/useContacts';
+import { useContactStatuses } from '@/hooks/useContactStatuses';
 import StatusBanner from '@/components/StatusBanner';
 import ContactCard from '@/components/ContactCard';
 
@@ -11,6 +12,7 @@ const Index = () => {
   const { isDisasterMode, isEvacuated, toggleDisasterMode, setEvacuated } = useAppStore();
   const { signOut } = useAuth();
   const { data: contacts = [], isLoading } = useContacts();
+  const statuses = useContactStatuses(contacts);
 
   return (
     <div className="min-h-screen pb-24">
@@ -89,7 +91,7 @@ const Index = () => {
           ) : (
             <div className="space-y-2">
               {contacts.slice(0, 3).map((contact) => (
-                <ContactCard key={contact.id} contact={contact} />
+                <ContactCard key={contact.id} contact={contact} liveStatus={contact.contact_user_id ? statuses[contact.contact_user_id] : undefined} />
               ))}
             </div>
           )}
