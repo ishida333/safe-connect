@@ -8,6 +8,9 @@ export interface EarthquakeInfo {
   detail: string;
   magnitude?: number;
   maxScale?: number;
+  lat?: number;
+  lng?: number;
+  depth?: number;
   time: string;
   points: { prefecture: string; name: string; scale: number }[];
 }
