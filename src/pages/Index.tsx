@@ -1,18 +1,19 @@
-import { Shield, MapPin, Users, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Shield, MapPin, Users, ChevronRight, CheckCircle2, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuth } from '@/hooks/useAuth';
+import { useContacts } from '@/hooks/useContacts';
 import StatusBanner from '@/components/StatusBanner';
 import ContactCard from '@/components/ContactCard';
-import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { isDisasterMode, isEvacuated, contacts, toggleDisasterMode, setEvacuated } = useAppStore();
-  const disasterContacts = contacts.filter((c) => c.isInDisasterZone);
+  const { isDisasterMode, isEvacuated, toggleDisasterMode, setEvacuated } = useAppStore();
+  const { signOut } = useAuth();
+  const { data: contacts = [], isLoading } = useContacts();
 
   return (
     <div className="min-h-screen pb-24">
-      {/* Header */}
       <header className={`sticky top-0 z-40 px-4 py-3 transition-colors duration-500 ${
         isDisasterMode ? 'bg-danger text-danger-foreground' : 'bg-primary text-primary-foreground'
       }`}>
@@ -21,16 +22,20 @@ const Index = () => {
             <Shield className="h-5 w-5" />
             <h1 className="text-base font-bold tracking-tight">みまもり</h1>
           </div>
-          <span className="text-xs font-medium opacity-80">
-            {isDisasterMode ? '⚠ 被災モード' : '✓ 通常モード'}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium opacity-80">
+              {isDisasterMode ? '⚠ 被災モード' : '✓ 通常モード'}
+            </span>
+            <button onClick={signOut} className="opacity-70 hover:opacity-100 transition-opacity">
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-lg">
         <StatusBanner />
 
-        {/* Action buttons */}
         <div className="mx-4 mt-4 space-y-3">
           {isDisasterMode && !isEvacuated && (
             <button
@@ -42,7 +47,6 @@ const Index = () => {
             </button>
           )}
 
-          {/* Demo toggle */}
           <button
             onClick={toggleDisasterMode}
             className={`flex w-full items-center justify-center gap-2 rounded-2xl p-3 text-sm font-medium transition-all active:scale-[0.98] ${
@@ -55,7 +59,6 @@ const Index = () => {
           </button>
         </div>
 
-        {/* Contacts summary */}
         <div className="mx-4 mt-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold flex items-center gap-1.5">
@@ -71,14 +74,27 @@ const Index = () => {
             </button>
           </div>
 
-          <div className="space-y-2">
-            {contacts.slice(0, 3).map((contact) => (
-              <ContactCard key={contact.id} contact={contact} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+          ) : contacts.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border p-6 text-center">
+              <Users className="mx-auto h-8 w-8 text-muted-foreground/30 mb-2" />
+              <p className="text-sm text-muted-foreground">まだ連絡先がありません</p>
+              <button onClick={() => navigate('/contacts')} className="mt-2 text-xs text-primary font-medium">
+                追加する →
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {contacts.slice(0, 3).map((contact) => (
+                <ContactCard key={contact.id} contact={contact} />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Quick access */}
         <div className="mx-4 mt-6 grid grid-cols-2 gap-3">
           <button
             onClick={() => navigate('/map')}
