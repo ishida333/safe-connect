@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       contacts: {
         Row: {
+          contact_user_id: string | null
           created_at: string
           id: string
           is_evacuated: boolean
@@ -28,6 +29,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          contact_user_id?: string | null
           created_at?: string
           id?: string
           is_evacuated?: boolean
@@ -40,6 +42,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          contact_user_id?: string | null
           created_at?: string
           id?: string
           is_evacuated?: boolean
@@ -57,6 +60,7 @@ export type Database = {
         Row: {
           created_at: string
           display_name: string
+          friend_code: string
           id: string
           updated_at: string
           user_id: string
@@ -64,6 +68,7 @@ export type Database = {
         Insert: {
           created_at?: string
           display_name?: string
+          friend_code?: string
           id?: string
           updated_at?: string
           user_id: string
@@ -71,6 +76,7 @@ export type Database = {
         Update: {
           created_at?: string
           display_name?: string
+          friend_code?: string
           id?: string
           updated_at?: string
           user_id?: string
@@ -82,7 +88,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_friend: {
+        Args: {
+          _relationship: string
+          _requester_id: string
+          _target_user_id: string
+        }
+        Returns: undefined
+      }
+      generate_friend_code: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

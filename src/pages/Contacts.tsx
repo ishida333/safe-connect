@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { UserPlus, Trash2, Users, ArrowLeft } from 'lucide-react';
+import { UserPlus, Trash2, Users, ArrowLeft, Search, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
-import { useContacts, useAddContact, useDeleteContact } from '@/hooks/useContacts';
+import { useContacts, useAddContactByFriendCode, useDeleteContact, useSearchByFriendCode } from '@/hooks/useContacts';
 import ContactCard from '@/components/ContactCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,24 +18,39 @@ const Contacts = () => {
   const navigate = useNavigate();
   const isDisasterMode = useAppStore((s) => s.isDisasterMode);
   const { data: contacts = [], isLoading } = useContacts();
-  const addContact = useAddContact();
+  const addContact = useAddContactByFriendCode();
   const deleteContact = useDeleteContact();
-  const [name, setName] = useState('');
+  const searchByCode = useSearchByFriendCode();
+
+  const [friendCode, setFriendCode] = useState('');
   const [relationship, setRelationship] = useState('');
   const [open, setOpen] = useState(false);
+  const [foundUser, setFoundUser] = useState<{ user_id: string; display_name: string } | null>(null);
+
+  const handleSearch = () => {
+    if (!friendCode.trim()) return;
+    searchByCode.mutate(friendCode, {
+      onSuccess: (data) => setFoundUser(data),
+      onError: () => {
+        setFoundUser(null);
+        toast.error('ユーザーが見つかりません');
+      },
+    });
+  };
 
   const handleAdd = () => {
-    if (!name || !relationship) return;
+    if (!friendCode || !relationship || !foundUser) return;
     addContact.mutate(
-      { name, relationship },
+      { friendCode, relationship },
       {
         onSuccess: () => {
-          setName('');
+          setFriendCode('');
           setRelationship('');
+          setFoundUser(null);
           setOpen(false);
-          toast.success('連絡先を追加しました');
+          toast.success('友達を追加しました');
         },
-        onError: () => toast.error('追加に失敗しました'),
+        onError: (e) => toast.error(e.message || '追加に失敗しました'),
       }
     );
   };
@@ -44,6 +59,16 @@ const Contacts = () => {
     deleteContact.mutate(id, {
       onSuccess: () => toast.success('連絡先を削除しました'),
     });
+  };
+
+  const handleOpenChange = (v: boolean) => {
+    setOpen(v);
+    if (!v) {
+      setFriendCode('');
+      setRelationship('');
+      setFoundUser(null);
+      searchByCode.reset();
+    }
   };
 
   return (
@@ -62,7 +87,7 @@ const Contacts = () => {
       <div className="mx-auto max-w-lg px-4 pt-4">
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-muted-foreground">{contacts.length}人の登録者</p>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1.5 rounded-full">
                 <UserPlus className="h-4 w-4" />
@@ -71,13 +96,46 @@ const Contacts = () => {
             </DialogTrigger>
             <DialogContent className="mx-4 rounded-2xl">
               <DialogHeader>
-                <DialogTitle>連絡先を追加</DialogTitle>
+                <DialogTitle>フレンドコードで追加</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-2">
+                {/* Friend code input */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">名前</label>
-                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="例: お兄ちゃん" className="rounded-xl" />
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">フレンドコード</label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={friendCode}
+                      onChange={(e) => {
+                        setFriendCode(e.target.value.toUpperCase());
+                        setFoundUser(null);
+                      }}
+                      placeholder="例: SL-A3X9K2"
+                      className="rounded-xl font-mono tracking-wider"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleSearch}
+                      disabled={!friendCode.trim() || searchByCode.isPending}
+                      className="shrink-0 rounded-xl"
+                    >
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
+
+                {/* Found user display */}
+                {foundUser && (
+                  <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 p-3">
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold">{foundUser.display_name || '名前未設定'}</p>
+                      <p className="text-[10px] text-muted-foreground">ユーザーが見つかりました</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Relationship */}
                 <div>
                   <label className="text-xs font-medium text-muted-foreground mb-1 block">関係</label>
                   <Select value={relationship} onValueChange={setRelationship}>
@@ -92,7 +150,12 @@ const Contacts = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleAdd} className="w-full rounded-xl" disabled={!name || !relationship || addContact.isPending}>
+
+                <Button
+                  onClick={handleAdd}
+                  className="w-full rounded-xl"
+                  disabled={!foundUser || !relationship || addContact.isPending}
+                >
                   追加する
                 </Button>
               </div>
@@ -124,7 +187,7 @@ const Contacts = () => {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Users className="h-12 w-12 text-muted-foreground/30 mb-3" />
             <p className="text-sm font-medium text-muted-foreground">まだ登録者がいません</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">上の「追加」ボタンから登録しましょう</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">フレンドコードで友達を追加しましょう</p>
           </div>
         )}
       </div>
