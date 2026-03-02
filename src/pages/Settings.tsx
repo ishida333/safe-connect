@@ -1,16 +1,29 @@
-import { ArrowLeft, Bell, Volume2, Vibrate, MapPin, Clock, Shield, ChevronRight, LogOut } from 'lucide-react';
+import { ArrowLeft, Bell, Volume2, Vibrate, MapPin, Clock, Shield, ChevronRight, LogOut, Copy, Check } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore, SCALE_OPTIONS } from '@/store/useAppStore';
 import { useAuth } from '@/hooks/useAuth';
+import { useMyProfile } from '@/hooks/useContacts';
 import { Switch } from '@/components/ui/switch';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { settings, updateSettings, isDisasterMode } = useAppStore();
   const { user, signOut } = useAuth();
+  const { data: profile } = useMyProfile();
+  const [copied, setCopied] = useState(false);
+
+  const copyFriendCode = () => {
+    if (!profile?.friend_code) return;
+    navigator.clipboard.writeText(profile.friend_code);
+    setCopied(true);
+    toast.success('コピーしました');
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="min-h-screen pb-24">
@@ -39,6 +52,21 @@ const Settings = () => {
                 <p className="text-[10px] text-muted-foreground">ログイン中</p>
               </div>
             </div>
+            {profile?.friend_code && (
+              <div className="flex items-center justify-between p-3 border-b border-border">
+                <div>
+                  <p className="text-[10px] text-muted-foreground">あなたのフレンドコード</p>
+                  <p className="text-sm font-bold font-mono tracking-wider">{profile.friend_code}</p>
+                </div>
+                <button
+                  onClick={copyFriendCode}
+                  className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? 'コピー済み' : 'コピー'}
+                </button>
+              </div>
+            )}
             <button
               onClick={signOut}
               className="flex w-full items-center gap-3 p-3 text-destructive hover:bg-destructive/5 transition-colors"
