@@ -1,8 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-<<<<<<< HEAD
-=======
-import { supabase } from '@/integrations/supabase/client';
->>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee
 
 export interface EarthquakeInfo {
   id: string;
@@ -32,7 +28,6 @@ export const useDisasterInfo = () => {
   return useQuery({
     queryKey: ['disaster-info'],
     queryFn: async () => {
-<<<<<<< HEAD
       // Fetch from P2P earthquake API directly (no edge function needed for public API)
       try {
         const res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=10');
@@ -76,13 +71,3 @@ function formatScale(scale: number): string {
   };
   return map[scale] || String(scale);
 }
-=======
-      const { data, error } = await supabase.functions.invoke('fetch-disaster-info');
-      if (error) throw error;
-      return data as { earthquakes: EarthquakeInfo[]; tsunamis: TsunamiInfo[] };
-    },
-    refetchInterval: 60000, // Refresh every 60 seconds
-    staleTime: 30000,
-  });
-};
->>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee

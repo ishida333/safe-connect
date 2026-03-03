@@ -3,13 +3,6 @@ import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-<<<<<<< HEAD
-=======
-/**
- * Syncs the current user's disaster mode, evacuation, and location
- * to their profile row so contacts can see it in realtime.
- */
->>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee
 export const useStatusSync = () => {
   const { user } = useAuth();
   const { isDisasterMode, isEvacuated, currentLocation, settings } = useAppStore();
@@ -24,10 +17,6 @@ export const useStatusSync = () => {
     const lat = isDisasterMode && settings.autoShareLocation ? currentLocation?.lat ?? null : null;
     const lng = isDisasterMode && settings.autoShareLocation ? currentLocation?.lng ?? null : null;
 
-<<<<<<< HEAD
-=======
-    // Only update if something changed
->>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee
     if (
       prev.dm === isDisasterMode &&
       prev.ev === isEvacuated &&

@@ -13,17 +13,7 @@ export interface Shelter {
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 
-<<<<<<< HEAD
 const fetchShelters = async (lat: number, lng: number): Promise<Shelter[]> => {
-=======
-/**
- * Fetch real evacuation shelters from OpenStreetMap via Overpass API.
- * Queries for nodes/ways tagged as emergency shelters or designated
- * evacuation sites within a bounding box around the user's location.
- */
-const fetchShelters = async (lat: number, lng: number): Promise<Shelter[]> => {
-  // ~5km bounding box
->>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee
   const delta = 0.05;
   const bbox = `${lat - delta},${lng - delta},${lat + delta},${lng + delta}`;
 
@@ -42,7 +32,6 @@ const fetchShelters = async (lat: number, lng: number): Promise<Shelter[]> => {
     out center body;
   `;
 
-<<<<<<< HEAD
   try {
     const res = await fetch(OVERPASS_URL, {
       method: 'POST',
@@ -116,69 +105,13 @@ const generateFallbackShelters = (lat: number, lng: number): Shelter[] => {
     lng: lng + (Math.random() - 0.5) * 0.01,
     type: b.type,
   }));
-=======
-  const res = await fetch(OVERPASS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `data=${encodeURIComponent(query)}`,
-  });
-
-  if (!res.ok) throw new Error('Overpass API error');
-
-  const data = await res.json();
-
-  const shelters: Shelter[] = data.elements
-    .map((el: any, idx: number) => {
-      const elLat = el.lat ?? el.center?.lat;
-      const elLng = el.lon ?? el.center?.lon;
-      if (!elLat || !elLng) return null;
-
-      const tags = el.tags ?? {};
-      const name =
-        tags['name:ja'] ||
-        tags.name ||
-        tags['name:en'] ||
-        tags.description ||
-        tags.operator ||
-        tags['addr:full'] ||
-        (tags['addr:street'] ? `${tags['addr:street']}付近の避難所` : null) ||
-        `避難所 ${el.id}`;
-
-      const type =
-        tags['emergency'] === 'assembly_point'
-          ? '指定避難所'
-          : tags['amenity'] === 'shelter'
-            ? '避難施設'
-            : '避難場所';
-
-      return {
-        id: el.id,
-        name,
-        lat: elLat,
-        lng: elLng,
-        type,
-        address: tags['addr:full'] || tags['addr:street'] || undefined,
-        operator: tags.operator || undefined,
-        website: tags.website || tags['contact:website'] || undefined,
-      } as Shelter;
-    })
-    .filter(Boolean) as Shelter[];
-
-  return shelters;
->>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee
 };
 
 function getDistanceM(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
-<<<<<<< HEAD
   const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-=======
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
->>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 

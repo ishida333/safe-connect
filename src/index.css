@@ -88,7 +88,6 @@
   .fade-in {
     animation: fade-in 0.3s ease-out;
   }
-<<<<<<< HEAD
 
   .disaster-shake {
     animation: disaster-shake 0.5s ease-in-out infinite;
@@ -97,8 +96,6 @@
   .disaster-glow {
     animation: disaster-glow 1.5s ease-in-out infinite;
   }
-=======
->>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee
 }
 
 @keyframes disaster-pulse {
@@ -120,7 +117,6 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
-<<<<<<< HEAD
 
 @keyframes disaster-shake {
   0%, 100% { transform: translateX(0); }
@@ -132,5 +128,3 @@
   0%, 100% { box-shadow: 0 0 10px hsl(4 80% 55% / 0.3), 0 0 30px hsl(4 80% 55% / 0.1); }
   50% { box-shadow: 0 0 20px hsl(4 80% 55% / 0.6), 0 0 60px hsl(4 80% 55% / 0.2); }
 }
-=======
->>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee
