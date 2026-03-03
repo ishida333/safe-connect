@@ -10,10 +10,6 @@ export interface ContactStatus {
   status_updated_at: string | null;
 }
 
-/**
- * Subscribes to realtime profile changes for all linked contacts.
- * Returns a map of contact_user_id -> live status.
- */
 export const useContactStatuses = (contacts: Contact[]) => {
   const [statuses, setStatuses] = useState<Record<string, ContactStatus>>({});
 
@@ -21,7 +17,6 @@ export const useContactStatuses = (contacts: Contact[]) => {
     .map((c) => c.contact_user_id)
     .filter((id): id is string => !!id);
 
-  // Initial fetch
   useEffect(() => {
     if (linkedIds.length === 0) return;
 
@@ -45,7 +40,6 @@ export const useContactStatuses = (contacts: Contact[]) => {
       });
   }, [linkedIds.join(',')]);
 
-  // Realtime subscription
   useEffect(() => {
     if (linkedIds.length === 0) return;
 

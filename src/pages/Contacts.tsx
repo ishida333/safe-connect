@@ -101,7 +101,6 @@ const Contacts = () => {
                 <DialogTitle>フレンドコードで追加</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-2">
-                {/* Friend code input */}
                 <div>
                   <label className="text-xs font-medium text-muted-foreground mb-1 block">フレンドコード</label>
                   <div className="flex gap-2">
@@ -126,7 +125,6 @@ const Contacts = () => {
                   </div>
                 </div>
 
-                {/* Found user display */}
                 {foundUser && (
                   <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 p-3">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
@@ -137,7 +135,6 @@ const Contacts = () => {
                   </div>
                 )}
 
-                {/* Relationship */}
                 <div>
                   <label className="text-xs font-medium text-muted-foreground mb-1 block">関係</label>
                   <Select value={relationship} onValueChange={setRelationship}>

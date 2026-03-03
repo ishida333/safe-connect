@@ -150,7 +150,6 @@ const ShelterMap = () => {
             <h1 className="text-base font-bold">避難所マップ</h1>
           </div>
         </header>
-
         <div className="mx-auto mt-8 max-w-lg px-4">
           <div className="rounded-2xl border border-border bg-card p-5 text-center">
             <AlertTriangle className="mx-auto mb-3 h-6 w-6 text-primary" />
@@ -182,77 +181,21 @@ const ShelterMap = () => {
       </header>
 
       <div className="mx-auto max-w-lg">
-        {/* Map */}
-        <div className="relative mx-4 mt-4 h-64 rounded-2xl overflow-hidden border border-border">
-          <MapContainer
-            center={[currentLocation.lat, currentLocation.lng]}
-            zoom={15}
-            className="h-full w-full"
-            zoomControl={false}
+        {/* Map placeholder - OpenStreetMap embed */}
+        <div className="relative mx-4 mt-4 h-64 rounded-2xl overflow-hidden border border-border bg-muted">
+          <iframe
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            src={`https://www.openstreetmap.org/export/embed.html?bbox=${currentLocation.lng - 0.02},${currentLocation.lat - 0.015},${currentLocation.lng + 0.02},${currentLocation.lat + 0.015}&layer=mapnik&marker=${currentLocation.lat},${currentLocation.lng}`}
+            title="避難所マップ"
+          />
+          <button
+            onClick={requestLocation}
+            className="absolute bottom-4 right-4 z-[10] flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-lg border border-border"
           >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-            {/* User location */}
-            <Marker position={[currentLocation.lat, currentLocation.lng]} icon={userIcon}>
-              <Popup>📍 現在地</Popup>
-            </Marker>
-
-            {/* Shelters */}
-            {shelters.map((s) => (
-              <Marker key={s.id} position={[s.lat, s.lng]} icon={shelterIcon}>
-                <Popup>
-                  <div>
-                    <strong>{s.name}</strong><br />
-                    {s.type} / 収容: {s.capacity}<br />
-                    距離: {formatDistance(s.distance)}<br />
-                    <button
-                      onClick={() => handleShelterClick(s)}
-                      className="mt-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded"
-                    >
-                      ルート表示
-                    </button>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-
-            {/* Route polyline */}
-            {currentRoute && (
-              <Polyline
-                positions={currentRoute.coordinates}
-                pathOptions={{ 
-                  color: '#339999', 
-                  weight: 4, 
-                  opacity: 0.7,
-                  dashArray: '10, 10'
-                }}
-              />
-            )}
-
-            {/* Earthquake epicenters */}
-            {recentEarthquakes.map((eq) => (
-              <Marker key={eq.id} position={[eq.lat!, eq.lng!]} icon={earthquakeIcon}>
-                <Popup>
-                  <strong>{eq.title}</strong><br />
-                  {eq.detail}<br />
-                  M{eq.magnitude}
-                </Popup>
-              </Marker>
-            ))}
-
-            {isDisasterMode && (
-              <Circle
-                center={[currentLocation.lat, currentLocation.lng]}
-                radius={2000}
-                pathOptions={{ color: 'hsl(4, 80%, 55%)', fillOpacity: 0.08, weight: 1 }}
-              />
-            )}
-
-            <RecenterButton lat={currentLocation.lat} lng={currentLocation.lng} />
-          </MapContainer>
+            <Crosshair className="h-5 w-5 text-primary" />
+          </button>
         </div>
 
         {/* Shelter list */}
@@ -368,6 +311,29 @@ const ShelterMap = () => {
             ))}
           </div>
         </div>
+
+        {/* Recent earthquakes */}
+        {recentEarthquakes.length > 0 && (
+          <div className="mx-4 mt-6">
+            <h2 className="text-sm font-bold mb-3 flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 text-danger" />
+              直近の地震震源地
+            </h2>
+            <div className="space-y-2">
+              {recentEarthquakes.map((eq) => (
+                <div key={eq.id} className="flex items-center gap-3 rounded-xl border border-danger/20 bg-danger/5 p-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-danger/15">
+                    <AlertTriangle className="h-4 w-4 text-danger" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold truncate">{eq.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{eq.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

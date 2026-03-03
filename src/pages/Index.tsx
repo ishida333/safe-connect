@@ -6,6 +6,7 @@ import { useContacts } from '@/hooks/useContacts';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
 import StatusBanner from '@/components/StatusBanner';
 import ContactCard from '@/components/ContactCard';
+import DisasterWarning from '@/components/DisasterWarning';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -36,7 +37,11 @@ const Index = () => {
       </header>
 
       <div className="mx-auto max-w-lg">
-        <StatusBanner />
+        {/* Big disaster warning when in disaster mode */}
+        <DisasterWarning />
+
+        {/* Status banner (safe / evacuated only) */}
+        {(!isDisasterMode || isEvacuated) && <StatusBanner />}
 
         <div className="mx-4 mt-6 space-y-3">
           {isDisasterMode && !isEvacuated && (

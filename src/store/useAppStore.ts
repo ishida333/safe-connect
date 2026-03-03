@@ -2,12 +2,12 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface Settings {
-  disasterThreshold: number; // Earthquake scale: 45=5弱, 50=5強, etc.
+  disasterThreshold: number;
   notificationsEnabled: boolean;
   soundEnabled: boolean;
   vibrationEnabled: boolean;
   autoShareLocation: boolean;
-  shareLocationDuration: number; // hours
+  shareLocationDuration: number;
   language: string;
   theme: 'light' | 'dark' | 'system';
 }

@@ -1,13 +1,8 @@
 import { useEffect, useCallback } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 
-type UseGeolocationOptions = {
-  autoRequest?: boolean;
-};
-
 const getGeolocationErrorMessage = (err: GeolocationPositionError | null) => {
   if (!err) return '位置情報の取得に失敗しました';
-
   switch (err.code) {
     case err.PERMISSION_DENIED:
       return '位置情報の利用が許可されていません。ブラウザ設定で許可してください。';
@@ -20,7 +15,7 @@ const getGeolocationErrorMessage = (err: GeolocationPositionError | null) => {
   }
 };
 
-export const useGeolocation = ({ autoRequest = true }: UseGeolocationOptions = {}) => {
+export const useGeolocation = ({ autoRequest = true }: { autoRequest?: boolean } = {}) => {
   const {
     currentLocation,
     locationLoading,
@@ -55,7 +50,6 @@ export const useGeolocation = ({ autoRequest = true }: UseGeolocationOptions = {
 
   useEffect(() => {
     if (!autoRequest) return;
-
     requestLocation();
 
     if (!navigator.geolocation) return;
