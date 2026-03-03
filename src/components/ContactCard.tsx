@@ -8,7 +8,6 @@ interface ContactCardProps {
 }
 
 const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
-  // Use live status from realtime if available, fall back to static contact fields
   const inDisasterZone = liveStatus?.is_in_disaster_zone ?? contact.is_in_disaster_zone;
   const evacuated = liveStatus?.is_evacuated ?? contact.is_evacuated;
   const hasLocation = liveStatus?.last_lat != null || contact.last_lat != null;

@@ -68,7 +68,7 @@ const Alerts = () => {
       <div className="mx-auto max-w-lg px-4 pt-4">
         <div className="rounded-2xl border border-border bg-accent/30 p-3 mb-4">
           <p className="text-xs text-muted-foreground text-center">
-            🔔 気象庁の地震・津波情報をリアルタイム取得中（60秒ごとに自動更新）
+            🔔 P2P地震情報APIからリアルタイム取得中（60秒ごとに自動更新）
           </p>
           {dataUpdatedAt > 0 && (
             <p className="text-[10px] text-muted-foreground/60 text-center mt-1">

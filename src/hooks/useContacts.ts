@@ -41,7 +41,6 @@ export const useAddContactByFriendCode = () => {
     mutationFn: async ({ friendCode, relationship }: { friendCode: string; relationship: string }) => {
       if (!user) throw new Error('Not authenticated');
 
-      // 1. Look up target user by friend code
       const { data: profile, error: searchError } = await supabase
         .from('profiles')
         .select('user_id, display_name')
@@ -51,7 +50,6 @@ export const useAddContactByFriendCode = () => {
       if (searchError || !profile) throw new Error('ユーザーが見つかりません');
       if (profile.user_id === user.id) throw new Error('自分自身は追加できません');
 
-      // 2. Call SECURITY DEFINER function for bi-directional add
       const { error } = await supabase.rpc('add_friend', {
         _requester_id: user.id,
         _target_user_id: profile.user_id,
