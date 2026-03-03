@@ -202,6 +202,13 @@ const Settings = () => {
               <p className="text-sm font-medium">プライバシーポリシー</p>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </div>
+<<<<<<< HEAD
+=======
+            <div className="flex items-center justify-between p-3">
+              <p className="text-sm font-medium">お問い合わせ</p>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+>>>>>>> 255b74762e59902324faeec9fddaac636d7a38ee
           </div>
         </section>
       </div>
