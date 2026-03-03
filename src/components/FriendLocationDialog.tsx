@@ -60,11 +60,9 @@ const FriendLocationDialog = ({ open, onOpenChange, name, lat, lng }: Props) => 
           )}
         </div>
         <div className="p-4">
-          <Button asChild variant="outline" className="w-full gap-2 rounded-xl">
-            <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-4 w-4" />
-              Google Maps で開く
-            </a>
+          <Button variant="outline" className="w-full gap-2 rounded-xl" onClick={() => window.open(googleMapsUrl, '_blank')}>
+            <ExternalLink className="h-4 w-4" />
+            Google Maps で開く
           </Button>
         </div>
       </DialogContent>

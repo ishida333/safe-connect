@@ -46,17 +46,13 @@ const ShelterDetailSheet = ({ shelter, open, onOpenChange }: Props) => {
           )}
 
           <div className="flex gap-2 pt-2">
-            <Button asChild className="flex-1 gap-2 rounded-xl">
-              <a href={directionsUrl} target="_blank" rel="noopener noreferrer">
-                <Navigation2 className="h-4 w-4" />
-                経路を表示
-              </a>
+            <Button className="flex-1 gap-2 rounded-xl" onClick={() => window.open(directionsUrl, '_blank')}>
+              <Navigation2 className="h-4 w-4" />
+              経路を表示
             </Button>
-            <Button asChild variant="outline" className="flex-1 gap-2 rounded-xl">
-              <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4" />
-                Google Maps
-              </a>
+            <Button variant="outline" className="flex-1 gap-2 rounded-xl" onClick={() => window.open(googleMapsUrl, '_blank')}>
+              <ExternalLink className="h-4 w-4" />
+              Google Maps
             </Button>
           </div>
         </div>
