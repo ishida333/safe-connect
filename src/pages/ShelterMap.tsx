@@ -1,11 +1,14 @@
 import { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline } from 'react-leaflet';
 import L from 'leaflet';
-import { Navigation, MapPin, Crosshair, Loader2, AlertTriangle } from 'lucide-react';
+import { Navigation, MapPin, Crosshair, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useDisasterInfo } from '@/hooks/useDisasterInfo';
+import { useEvacuationRoute, type Shelter } from '@/hooks/useEvacuationRoute';
+import { useNearestShelter } from '@/hooks/useNearestShelter';
+import { EvacuationRoute } from '@/components/EvacuationRoute';
 import 'leaflet/dist/leaflet.css';
 
 // Fix leaflet default marker icon
@@ -42,14 +45,7 @@ const earthquakeIcon = new L.DivIcon({
   iconAnchor: [7, 7],
 });
 
-// Mock nearby shelters (in real app, fetch from an API based on location)
-const generateNearbyShelters = (lat: number, lng: number) => [
-  { id: 1, name: '指定避難所 A', type: '指定避難所', lat: lat + 0.003, lng: lng + 0.004, capacity: '800人' },
-  { id: 2, name: '広域避難場所 B', type: '広域避難場所', lat: lat - 0.005, lng: lng + 0.002, capacity: '5,000人' },
-  { id: 3, name: '指定避難所 C', type: '指定避難所', lat: lat + 0.002, lng: lng - 0.006, capacity: '1,200人' },
-  { id: 4, name: '公園避難場所 D', type: '広域避難場所', lat: lat - 0.003, lng: lng - 0.004, capacity: '3,000人' },
-  { id: 5, name: '学校避難所 E', type: '指定避難所', lat: lat + 0.006, lng: lng + 0.001, capacity: '1,000人' },
-];
+
 
 function getDistanceM(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000;
@@ -81,16 +77,32 @@ const ShelterMap = () => {
   const isDisasterMode = useAppStore((s) => s.isDisasterMode);
   const { currentLocation, locationLoading, locationError, requestLocation } = useGeolocation({ autoRequest: false });
   const { data: disasterData } = useDisasterInfo();
+  const { selectedShelter, calculateRoute, selectShelter, clearRoute } = useEvacuationRoute();
+  
+  // Overpass APIから避難所を取得
+  const {
+    shelters: shelterData,
+    loading: shelterLoading,
+    error: shelterError,
+    refetch: refetchShelter,
+  } = useNearestShelter(
+    currentLocation?.lat ?? null,
+    currentLocation?.lng ?? null,
+    !!currentLocation // 現在地が取得できている場合のみ検索
+  );
 
+  // 避難所リスト（公式避難所を優先表示、候補も含める）
+  // official: 上位10件、candidate: 上位5件、合計最大15件
   const shelters = useMemo(() => {
-    if (!currentLocation) return [];
-    return generateNearbyShelters(currentLocation.lat, currentLocation.lng)
-      .map((s) => ({
-        ...s,
-        distance: getDistanceM(currentLocation.lat, currentLocation.lng, s.lat, s.lng),
-      }))
-      .sort((a, b) => a.distance - b.distance);
-  }, [currentLocation]);
+    const officialTop10 = shelterData.official.slice(0, 10);
+    const candidateTop5 = shelterData.candidate.slice(0, 5);
+    return [...officialTop10, ...candidateTop5];
+  }, [shelterData]);
+
+  const currentRoute = useMemo(() => {
+    if (!selectedShelter || !currentLocation) return null;
+    return calculateRoute(currentLocation.lat, currentLocation.lng, selectedShelter);
+  }, [selectedShelter, currentLocation, calculateRoute]);
 
   const recentEarthquakes = useMemo(() => {
     if (!disasterData?.earthquakes) return [];
@@ -98,6 +110,10 @@ const ShelterMap = () => {
       .filter((eq) => eq.lat && eq.lng)
       .slice(0, 5);
   }, [disasterData]);
+
+  const handleShelterClick = (shelter: Shelter) => {
+    selectShelter(shelter);
+  };
 
   if (locationLoading) {
     return (
@@ -188,12 +204,33 @@ const ShelterMap = () => {
             {shelters.map((s) => (
               <Marker key={s.id} position={[s.lat, s.lng]} icon={shelterIcon}>
                 <Popup>
-                  <strong>{s.name}</strong><br />
-                  {s.type} / 収容: {s.capacity}<br />
-                  距離: {formatDistance(s.distance)}
+                  <div>
+                    <strong>{s.name}</strong><br />
+                    {s.type} / 収容: {s.capacity}<br />
+                    距離: {formatDistance(s.distance)}<br />
+                    <button
+                      onClick={() => handleShelterClick(s)}
+                      className="mt-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded"
+                    >
+                      ルート表示
+                    </button>
+                  </div>
                 </Popup>
               </Marker>
             ))}
+
+            {/* Route polyline */}
+            {currentRoute && (
+              <Polyline
+                positions={currentRoute.coordinates}
+                pathOptions={{ 
+                  color: '#339999', 
+                  weight: 4, 
+                  opacity: 0.7,
+                  dashArray: '10, 10'
+                }}
+              />
+            )}
 
             {/* Earthquake epicenters */}
             {recentEarthquakes.map((eq) => (
@@ -220,35 +257,114 @@ const ShelterMap = () => {
 
         {/* Shelter list */}
         <div className="mx-4 mt-4">
-          <h2 className="text-sm font-bold mb-3 flex items-center gap-1.5">
-            <MapPin className="h-4 w-4 text-primary" />
-            近くの避難場所
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold flex items-center gap-1.5">
+              <MapPin className="h-4 w-4 text-primary" />
+              近くの避難場所
+              {shelters.length > 0 && (
+                <span className="text-xs font-normal text-muted-foreground">
+                  ({shelterData.official.length}箇所 + 候補{shelterData.candidate.length}箇所)
+                </span>
+              )}
+            </h2>
+            {!shelterLoading && shelters.length > 0 && (
+              <button
+                onClick={refetchShelter}
+                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+              >
+                <RefreshCw className="h-3 w-3" />
+                再検索
+              </button>
+            )}
+          </div>
+
+          {/* 避難所検索中 */}
+          {shelterLoading && (
+            <div className="flex flex-col items-center justify-center py-8 rounded-xl border border-dashed border-border bg-card/50">
+              <Loader2 className="h-6 w-6 animate-spin text-primary mb-2" />
+              <p className="text-sm text-muted-foreground">避難所を検索中...</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">段階的に検索しています</p>
+            </div>
+          )}
+
+          {/* 避難所検索エラー */}
+          {!shelterLoading && shelterError && (
+            <div className="rounded-xl border border-border bg-card p-4 text-center">
+              <AlertTriangle className="mx-auto h-5 w-5 text-warning mb-2" />
+              <p className="text-sm font-medium text-muted-foreground">{shelterError}</p>
+              <button
+                onClick={refetchShelter}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary/80"
+              >
+                <RefreshCw className="h-3 w-3" />
+                再試行
+              </button>
+            </div>
+          )}
+
+          {/* Route info card */}
+          {currentRoute && (
+            <div className="mb-4">
+              <EvacuationRoute route={currentRoute} onClose={clearRoute} />
+            </div>
+          )}
+
+          {/* 避難所リスト */}
+          {!shelterLoading && !shelterError && shelters.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border bg-card p-6 text-center">
+              <MapPin className="mx-auto h-8 w-8 text-muted-foreground/30 mb-2" />
+              <p className="text-sm text-muted-foreground">近くに避難所が見つかりませんでした</p>
+              <button
+                onClick={refetchShelter}
+                className="mt-2 text-xs text-primary font-medium"
+              >
+                再検索 →
+              </button>
+            </div>
+          )}
 
           <div className="space-y-2">
             {shelters.map((shelter) => (
-              <div
+              <button
                 key={shelter.id}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
+                onClick={() => handleShelterClick(shelter)}
+                className={`flex items-center gap-3 rounded-xl border p-3 w-full text-left transition-all ${
+                  selectedShelter?.id === shelter.id
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border bg-card hover:bg-accent'
+                }`}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                  <MapPin className="h-5 w-5 text-primary" />
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                  shelter.category === 'official' ? 'bg-primary/10' : 'bg-muted'
+                }`}>
+                  <MapPin className={`h-5 w-5 ${
+                    shelter.category === 'official' ? 'text-primary' : 'text-muted-foreground'
+                  }`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{shelter.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                      shelter.category === 'official'
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-accent text-accent-foreground'
+                    }`}>
                       {shelter.type}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      収容: {shelter.capacity}
-                    </span>
+                    {shelter.capacity && (
+                      <span className="text-[10px] text-muted-foreground">
+                        収容: {shelter.capacity}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-sm font-bold text-primary">{formatDistance(shelter.distance)}</p>
+                  {selectedShelter?.id === shelter.id && (
+                    <p className="text-[10px] text-primary font-medium mt-0.5">ルート表示中</p>
+                  )}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
