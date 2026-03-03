@@ -3,6 +3,7 @@ import type { Contact } from '@/hooks/useContacts';
 import type { ContactStatus } from '@/hooks/useContactStatuses';
 import { MapPin, CheckCircle2, AlertTriangle, Clock, Navigation2 } from 'lucide-react';
 import FriendLocationDialog from '@/components/FriendLocationDialog';
+import ContactProfileDialog from '@/components/ContactProfileDialog';
 
 interface ContactCardProps {
   contact: Contact;
@@ -11,6 +12,7 @@ interface ContactCardProps {
 
 const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
   const [showLocation, setShowLocation] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const inDisasterZone = liveStatus?.is_in_disaster_zone ?? contact.is_in_disaster_zone;
   const evacuated = liveStatus?.is_evacuated ?? contact.is_evacuated;
@@ -27,15 +29,18 @@ const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
             : 'border-danger/30 bg-danger/5'
           : 'border-border bg-card'
       }`}>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shrink-0 ${
-          inDisasterZone
-            ? evacuated
-              ? 'bg-safe text-safe-foreground'
-              : 'bg-danger text-danger-foreground'
-            : 'bg-secondary text-secondary-foreground'
-        }`}>
+        <button
+          onClick={() => setShowProfile(true)}
+          className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shrink-0 transition-transform active:scale-90 ${
+            inDisasterZone
+              ? evacuated
+                ? 'bg-safe text-safe-foreground'
+                : 'bg-danger text-danger-foreground'
+              : 'bg-secondary text-secondary-foreground'
+          }`}
+        >
           {contact.name.charAt(0)}
-        </div>
+        </button>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -67,7 +72,6 @@ const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
           )}
         </div>
 
-        {/* 位置を確認ボタン - 被災エリア内で位置情報がある場合に表示 */}
         {inDisasterZone && hasLocation && (
           <button
             onClick={() => setShowLocation(true)}
@@ -77,7 +81,6 @@ const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
             位置を確認
           </button>
         )}
-        {/* 被災エリア内だが位置情報がない場合 */}
         {inDisasterZone && !hasLocation && (
           <span className="shrink-0 text-[10px] text-muted-foreground flex items-center gap-0.5">
             <MapPin className="h-3 w-3" />
@@ -95,6 +98,13 @@ const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
           lng={friendLng!}
         />
       )}
+
+      <ContactProfileDialog
+        open={showProfile}
+        onOpenChange={setShowProfile}
+        contact={contact}
+        liveStatus={liveStatus}
+      />
     </>
   );
 };

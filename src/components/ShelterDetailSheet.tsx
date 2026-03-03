@@ -1,6 +1,6 @@
 import type { ShelterWithDistance } from '@/hooks/useShelters';
 import { formatDistance } from '@/hooks/useShelters';
-import { MapPin, ExternalLink, Navigation2 } from 'lucide-react';
+import { MapPin, ExternalLink, Navigation2, Globe } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from '@/components/ui/sheet';
@@ -15,7 +15,6 @@ interface Props {
 const ShelterDetailSheet = ({ shelter, open, onOpenChange }: Props) => {
   if (!shelter) return null;
 
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${shelter.lat},${shelter.lng}`;
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${shelter.lat},${shelter.lng}`;
 
   return (
@@ -50,10 +49,17 @@ const ShelterDetailSheet = ({ shelter, open, onOpenChange }: Props) => {
               <Navigation2 className="h-4 w-4" />
               経路を表示
             </Button>
-            <Button variant="outline" className="flex-1 gap-2 rounded-xl" onClick={() => window.open(googleMapsUrl, '_blank')}>
-              <ExternalLink className="h-4 w-4" />
-              Google Maps
-            </Button>
+            {shelter.website ? (
+              <Button variant="outline" className="flex-1 gap-2 rounded-xl" onClick={() => window.open(shelter.website, '_blank')}>
+                <Globe className="h-4 w-4" />
+                公式サイト
+              </Button>
+            ) : (
+              <Button variant="outline" className="flex-1 gap-2 rounded-xl" onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(shelter.name)}`, '_blank')}>
+                <ExternalLink className="h-4 w-4" />
+                検索する
+              </Button>
+            )}
           </div>
         </div>
       </SheetContent>
