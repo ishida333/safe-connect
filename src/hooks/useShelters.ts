@@ -8,6 +8,7 @@ export interface Shelter {
   type: string;
   address?: string;
   operator?: string;
+  website?: string;
 }
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
@@ -79,6 +80,7 @@ const fetchShelters = async (lat: number, lng: number): Promise<Shelter[]> => {
         type,
         address: tags['addr:full'] || tags['addr:street'] || undefined,
         operator: tags.operator || undefined,
+        website: tags.website || tags['contact:website'] || undefined,
       } as Shelter;
     })
     .filter(Boolean) as Shelter[];
