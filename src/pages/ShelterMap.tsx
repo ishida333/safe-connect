@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import { Navigation, MapPin, Crosshair, Loader2, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { useGeolocation } from '@/hooks/useGeolocation';
@@ -79,6 +80,15 @@ const RecenterButton = ({ lat, lng }: { lat: number; lng: number }) => {
 const ShelterMap = () => {
   const navigate = useNavigate();
   const isDisasterMode = useAppStore((s) => s.isDisasterMode);
+  const setDisasterMode = useAppStore((s) => s.setDisasterMode);
+  const addZone = useAppStore((s) => s.addDangerZone);
+  const removeZone = useAppStore((s) => s.removeDangerZone);
+
+  const [demoQuakeActive, setDemoQuakeActive] = useState(false);
+  const [demoQuake, setDemoQuake] = useState<{lat:number,lng:number}|null>(null);
+  const [demoTsunami, setDemoTsunami] = useState<{lat:number,lng:number}|null>(null);
+  const [demoTsunamiZoneId, setDemoTsunamiZoneId] = useState<number | null>(null);
+
   const { currentLocation, locationLoading, locationError, requestLocation } = useGeolocation({ autoRequest: false });
   const { data: disasterData } = useDisasterInfo();
 
@@ -166,6 +176,67 @@ const ShelterMap = () => {
       </header>
 
       <div className="mx-auto max-w-lg">
+        {/* demo controls - always visible */}
+        <div className="mx-4 mt-2 flex gap-2">
+          <button
+            onClick={() => {
+              if (!currentLocation) {
+                toast('位置情報が必要です');
+                return;
+              }
+              if (demoQuake === null) {
+                // start quake demo
+                setDisasterMode(true);
+                setDemoQuake({lat: currentLocation.lat, lng: currentLocation.lng});
+                setDemoQuakeActive(true);
+                toast.error('🔔 デモ地震を開始しました');
+              } else {
+                // stop quake demo
+                setDemoQuake(null);
+                setDemoQuakeActive(false);
+                setDisasterMode(false);
+                toast('✅ デモ地震を停止しました');
+              }
+            }}
+            className="inline-flex items-center gap-1 rounded-lg border px-3 py-1 text-xs font-medium bg-accent text-accent-foreground border-accent"
+          >
+            {demoQuake ? 'デモ地震停止' : 'デモ地震開始'}
+          </button>
+          <button
+            onClick={() => {
+              if (!currentLocation) {
+                toast('位置情報が必要です');
+                return;
+              }
+              if (demoTsunami === null) {
+                // start tsunami demo
+                setDisasterMode(true);
+                const id = Date.now();
+                setDemoTsunami({lat:35.54,lng:139.73});
+                addZone({
+                  id,
+                  lat: 35.54,
+                  lng: 139.73,
+                  radius: 3000,
+                  label: '津波警報：大田区蒲田',
+                });
+                setDemoTsunamiZoneId(id);
+                toast.error('🌊 大田区蒲田に津波が到達');
+              } else {
+                // stop tsunami demo
+                setDemoTsunami(null);
+                if (demoTsunamiZoneId !== null) removeZone(demoTsunamiZoneId);
+                setDemoTsunamiZoneId(null);
+                setDisasterMode(false);
+                toast('✅ 津波デモを停止しました');
+              }
+            }}
+            className="inline-flex items-center gap-1 rounded-lg border px-3 py-1 text-xs font-medium bg-accent text-accent-foreground border-accent"
+          >
+            {demoTsunami ? '津波デモ停止' : '津波デモ（蒲田）'}
+          </button>
+        </div>
+
         {/* Map */}
         <div className="relative mx-4 mt-4 h-64 rounded-2xl overflow-hidden border border-border">
           <MapContainer
@@ -206,13 +277,30 @@ const ShelterMap = () => {
               </Marker>
             ))}
 
-            {isDisasterMode && (
+            {/* demo circles */}
+
+            {demoQuake && (
               <Circle
-                center={[currentLocation.lat, currentLocation.lng]}
-                radius={2000}
-                pathOptions={{ color: 'hsl(4, 80%, 55%)', fillOpacity: 0.08, weight: 1 }}
+                center={[demoQuake.lat, demoQuake.lng]}
+                radius={50000}
+                pathOptions={{ color: 'red', fillOpacity: 0.1, weight: 1 }}
               />
             )}
+
+            {demoTsunami && (
+              <Circle
+                center={[demoTsunami.lat, demoTsunami.lng]}
+                radius={3000}
+                pathOptions={{ color: 'blue', fillOpacity: 0.1, weight: 1 }}
+              />
+            )}
+
+            {/* always-show green circle around user */}
+            <Circle
+              center={[currentLocation.lat, currentLocation.lng]}
+              radius={2000}
+              pathOptions={{ color: 'green', fillOpacity: 0.08, weight: 1 }}
+            />
 
             <RecenterButton lat={currentLocation.lat} lng={currentLocation.lng} />
           </MapContainer>
