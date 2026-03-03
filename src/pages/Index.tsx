@@ -1,4 +1,4 @@
-import { Shield, MapPin, Users, ChevronRight, CheckCircle2, LogOut } from 'lucide-react';
+import { Shield, MapPin, Users, ChevronRight, CheckCircle2, LogOut, Navigation } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,15 +43,24 @@ const Index = () => {
         {/* Status banner (safe / evacuated only) */}
         {(!isDisasterMode || isEvacuated) && <StatusBanner />}
 
-        <div className="mx-4 mt-4 space-y-3">
+        <div className="mx-4 mt-6 space-y-3">
           {isDisasterMode && !isEvacuated && (
-            <button
-              onClick={() => setEvacuated(true)}
-              className="slide-up flex w-full items-center justify-center gap-2 rounded-2xl bg-safe p-4 text-safe-foreground font-bold shadow-lg transition-transform active:scale-[0.98]"
-            >
-              <CheckCircle2 className="h-5 w-5" />
-              避難完了を報告する
-            </button>
+            <>
+              <button
+                onClick={() => navigate('/map')}
+                className="slide-up flex w-full items-center justify-center gap-2 rounded-2xl bg-primary p-4 text-primary-foreground font-bold shadow-lg transition-transform active:scale-[0.98]"
+              >
+                <Navigation className="h-5 w-5" />
+                安全な避難経路を確認
+              </button>
+              <button
+                onClick={() => setEvacuated(true)}
+                className="slide-up flex w-full items-center justify-center gap-2 rounded-2xl bg-safe p-4 text-safe-foreground font-bold shadow-lg transition-transform active:scale-[0.98]"
+              >
+                <CheckCircle2 className="h-5 w-5" />
+                避難完了を報告する
+              </button>
+            </>
           )}
 
           <button
