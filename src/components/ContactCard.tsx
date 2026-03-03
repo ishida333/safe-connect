@@ -46,7 +46,7 @@ const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
           </div>
 
           {inDisasterZone ? (
-            <div className="flex items-center gap-1 mt-0.5">
+            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
               {evacuated ? (
                 <>
                   <CheckCircle2 className="h-3 w-3 text-safe" />
@@ -58,12 +58,6 @@ const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
                   <span className="text-xs text-danger font-medium">被災エリア内</span>
                 </>
               )}
-              {hasLocation && (
-                <span className="text-[10px] text-muted-foreground ml-1 flex items-center gap-0.5">
-                  <MapPin className="h-2.5 w-2.5" />
-                  位置情報共有中
-                </span>
-              )}
             </div>
           ) : (
             <div className="flex items-center gap-1 mt-0.5">
@@ -73,7 +67,7 @@ const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
           )}
         </div>
 
-        {/* 位置を確認ボタン */}
+        {/* 位置を確認ボタン - 被災エリア内で位置情報がある場合に表示 */}
         {inDisasterZone && hasLocation && (
           <button
             onClick={() => setShowLocation(true)}
@@ -82,6 +76,13 @@ const ContactCard = ({ contact, liveStatus }: ContactCardProps) => {
             <Navigation2 className="h-3.5 w-3.5" />
             位置を確認
           </button>
+        )}
+        {/* 被災エリア内だが位置情報がない場合 */}
+        {inDisasterZone && !hasLocation && (
+          <span className="shrink-0 text-[10px] text-muted-foreground flex items-center gap-0.5">
+            <MapPin className="h-3 w-3" />
+            位置不明
+          </span>
         )}
       </div>
 

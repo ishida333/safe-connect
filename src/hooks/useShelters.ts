@@ -55,10 +55,14 @@ const fetchShelters = async (lat: number, lng: number): Promise<Shelter[]> => {
 
       const tags = el.tags ?? {};
       const name =
-        tags.name ||
         tags['name:ja'] ||
+        tags.name ||
+        tags['name:en'] ||
         tags.description ||
-        `避難所 #${idx + 1}`;
+        tags.operator ||
+        tags['addr:full'] ||
+        (tags['addr:street'] ? `${tags['addr:street']}付近の避難所` : null) ||
+        `避難所 ${el.id}`;
 
       const type =
         tags['emergency'] === 'assembly_point'
