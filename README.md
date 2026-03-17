@@ -64,6 +64,11 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
 
+## Features
+
+- 災害時危険区域マッピング: 地図に危険区域を追加・削除できます。
+- デモ機能: ボタンでデモ地震の開始/停止および蒲田を想定した津波デモを発生させられます。
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!
